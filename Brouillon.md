@@ -1,0 +1,1 @@
+0x01BB >> convertir ce genre de nombres 

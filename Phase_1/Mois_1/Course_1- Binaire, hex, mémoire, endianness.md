@@ -1,0 +1,187 @@
+Un paquet est une suite d'octects 
+
+hexadecimal > important pour lire un paquet comme lire une phrase
+Lois base = 2^n
+![](Pasted%20image%2020260607232309.png)
+
+## Représentation des nombres
+### Conversion du binaire en décimal
+
+on prend un octet comme : 11010010
+Il faut savoir qu'un octet là il contient 8bits 
+Le binaire contient 2 caractères (0 et 1)
+Le décimal contient 10 caractères (0,1,2,3,4,5,6,7,8,9)
+
+
+| 2^7 | 2^6 | 2^5 | 2^4 | 2^3 | 2^2 | 2^1 | 2^0 | Poids binaire                  |
+| --- | --- | --- | --- | --- | --- | --- | --- | ------------------------------ |
+| 128 | 64  | 32  | 16  | 8   | 4   | 2   | 1   | Poids binaire simplifié        |
+| 1   | 1   | 0   | 1   | 0   | 0   | 1   | 0   | Nombre binaire (=octet)        |
+| 128 | 64  | 0   | 16  | 0   | 0   | 2   | 0   | Poids binaire x nombre binaire |
+|     |     |     |     |     |     |     | 210 | Resultat                       |
+Questions : 
+- Pourquoi c'est des 2exposants ? >> c'est en base 2 comme le décimal qui est lui en base 10 et l'héxadécimal en base 16
+- Comment est-ce que sa communique avec l'ordinateur et à quelle échelle ? C'est surtout l'héxadécimal qui communique (héxadécimal est juste du binaire écrit différament et compacter sans perte) c'est pour ça que tout les outils  comme Wirehsark parlent héxadécimal. >>"un dump hexa, c'est du binaire déguisé." Pour le décimal, ce n'est pas une puissance de 2 aucun découpage peut-être propre donc ce n'est pas du binaire compacté sans perte.
+- A quoi sa sert concrêtement ? >> à communiquer dans le langage de la machine
+- Pourquoi un octet c'est seulement 8bits et pas 7 ou 9 ? >> On prend 8 car c'est divisable parfaitement par 2 donc binaire 8=2^3 , l'ascii original tenait sur 7bits(128 = 128 caractères) donc on est passer à 8bits(256) pour laisser place aux symboles et accents, IBM (entreprise multinationale américaine présente dans les domaines du matériel informatique, du logiciel et des services informatiques) a standardisé avec son System/360 (1964) toute l'industrie a suivi.
+- Soyons honnête est-ce que c'est important et utile de connaître 2^7 = 128 sinon à chaque fois que sa convertit du binaire en décimale je pense direct à 128 que 2^7 ? >> connaître ses puissances
+- Comment devrais-je mieux faire la convertion ? >> oui 
+- Est-ce que c'est la bonne méthode ? >> oui,
+- Le 2^0 compte t-il comme un bit >> oui
+### Conversion du binaire en héxadécimal
+
+L'héxadecimal contient 16 caractères (0,1,2,3,4,5,6,7,8,9), et (A,B,C,D,E,F)
+#### Méthode 1 ( pas faire)
+
+| binaire | hexadécimale | x   | binaire   | hexadécimale | binaire   | hexadécimale |
+| ------- | ------------ | --- | --------- | ------------ | --------- | ------------ |
+| 0000    | 0            | x   | 1010      | A            | 0001 0100 | 14           |
+| 0001    | 1            | x   | 1011      | B            | 0001 0101 | 15           |
+| 0010    | 2            | x   | 1100      | C            | 0001 0110 | 16           |
+| 0011    | 3            | x   | 1101      | D            | 0001 0111 | 17           |
+| 0100    | 4            | x   | 1110      | E            | 0001 1000 | 18           |
+| 0101    | 5            | x   | 1111      | F            | 0001 1001 | 19           |
+| 0110    | 6            | x   | 0001 0000 | 10           | 0001 1010 | 1A           |
+| 0111    | 7            | x   | 0001 0001 | 11           | 0001 1011 | 1B           |
+| 1000    | 8            | x   | 0001 0010 | 12           | 0001 1100 | 1C           |
+| 1001    | 9            | x   | 0001 0011 | 13           | 0001 1101 | 1D           |
+
+On va donc prendre un octet comme : 11010010
+On va découper cet octet en 2 : 1101 0010
+
+| 1101 | 0010 |
+| ---- | ---- |
+| D    | 2    |
+donc le résulat de la conversion est D2
+
+#### Méthode 2 (faire)
+
+On a un octet de 11010010, qu'on va diviser en 2 pour faire un paquet de 4bits (nibble) : 1101 0010 avec des poids du bas donc 8-4-2-1
+on va prendre 1101 == 8+4+0+1 >> 13 et 0010 == 0+0+2+0 >> 2 
+si on prend 13 sachant que A commence à 10 sa donne D et 2=2
+donc le résultat est D2
+
+
+Questions : 
+- Dois-je apprendre le tableau par coeur ? >> non je ne dois pas pas apprendre par coeur et faut calculer chaque groupe de 4bits comme en décimal, qui peut aussi s'appliquer pour l'héxadécimale
+- Existe-il une technique pour trouver de la bonne façon le résulat ? >> Méthode 2, par nibble
+- Est-ce que c'est la bonne méthode ? >> Méthode 2, par nibble
+
+## Endianness
+
+On a vu des nombres qui tenait sur 1 octet (8bits = 2^8 = 0 à 255), mais beaucoup dépassent un octet comme le port 443(HTTPS). 443 = 0x01BB > 2 octets 01 et BB 
+
+Cours 
+Tu dois ranger ces 2 octets en mémoire, l'un après l'autre, du plus bas au plus haut. Lequel tu mets **en premier** (à l'adresse la plus basse) : `01` ou `BB` ? Et surtout — d'après toi, est-ce qu'il y a **une seule bonne réponse** ? 
+->> Même si on trie du plus bas au plus haut, il n'y aura pas une seule bonne réponse valide. 
+0x01BB ne change pas tout seul( le sens de la donnée n'influence rien), ce qui change c'est l'ordre des octets en mémoire qui est déterminer par le système ou la convention d'un protocole utiliser.
+Il existe 2 conventions possibles :
+
+| 0x01BB | Big-endian    | [01][BB] | l'octet de poid fort en premier   |
+| ------ | ------------- | -------- | --------------------------------- |
+| 0x01BB | little-endian | [BB][01] | l'octet de poid faible en premier |
+
+Big-endian >> l'octet du poid le plus fort est à l'adresse la plus basse :
+- adresse 1000 : 01
+- adresse 1001 : BB
+Little-endian >> l'octet du poid le plus faible est à l'adresse la plus basse:
+- adresse 1000 : BB
+- adresse 1001 : 01
+
+L'octet du poids fort est celui en premier (MSB, Most Significant Byte) tandis que le poid faible est en deuxième (LSB, Least Significant Byte). Par exemple : 0x01BB
+1234 = 1 est vu comme 1000 tandis que 2 est vu comme 200 etc
+
+- 0x01BB >> 01 est multiplié par 256 tandis que BB est mulitplié par 1 .
+Il faut regarder sa position dans le nombre et non dans sa forme binaire comme une conversion 
+
+Le sens aussi est définit par le programme, pas par la mémoire : 
+- 0x01BB est le port 443 selon l'endianness
+- 0x01BB comme une température 
+- 0x01BB ou n'importe quoi
+L'interprétation change, mais le rangement des octets reste identique pour une même machine
+
+Le réseau a choisit big-endian comme convention officielle.
+Dans les années 70 et 80, lorsque les protocoles fondateurs d'internet ont émergés (TCP/IP qui ont été développés pour le réseau ARPANET, la plupart des machines, ordinateurs et serveurs (mainframes IBM, processeurs Motorola 68000, ...) utilisaient majoritairement le format Big-Endian.
+Le choix s'est porté naturellement sur les machines dominantes qui accèdaient au réseau via cette convention à l'époque.
+Les équipements réseaux comme le routeur ont une prise de précision plus rapide car les bits de poids forts sont lu en permier comme ils sont à gauche ( adresse IPv4 qui vaut 32bits soit 4octets) donc le routeur peut déjà commencer le chemin vers l'hôte en ayant déjà une idée de la destination.
+Pour les humains, c'était plus facile au niveau du débogagecar le Big-endian correspond à la façon dont nous les humains nous lisons (de gauche à droite), comme les ingénieurs d'autre fois d'autrefois devait souvent lire des dumps de paquets réseaux pour déboguer les communications.
+Le fait que l'en-tête notamment les adresses IP et les ports soient directement lisibles directement à gauche leurs rendaient la tâche moins ardue.
+
+Les données sont pas générés depuis le little-endian mais vient avant, c'est comme ça qu'on détermine le poids fort du faible. 
+- **La valeur** `0x01BB` : c'est des maths pures. Elle existe « avant », indépendamment de toute machine. C'est elle qui définit qui est le MSB (`01`, l'octet de poids fort) et qui est le LSB (`BB`, l'octet de poids faible). Ça, aucune machine ne peut le changer — c'est de l'arithmétique.
+- **Notre écriture** `0x01BB` sur le papier : une convention _humaine_. On écrit le gros bout à gauche, comme en décimal (on écrit « 256 », pas « 652 »).
+- **Le stockage en mémoire** : c'est _seulement ici_ que l'endianness débarque. Elle ne touche ni à la valeur, ni à notre façon de l'écrire — elle décide juste **quel octet va à quelle adresse**.
+
+Question
+Sur ta machine Debian, tu stockes le nombre `0x01BB`. Une première fois c'est un **numéro de port**, une deuxième fois c'est la **taille d'un fichier**. Les octets seront-ils rangés **pareil ou différemment** dans les deux cas ? Et **pourquoi** ?
+->> Si ma debian stocke 0x01BB même si unepremière fois c'est un port ou l'autre fois c'est la taille d'un fichier, l'ordre des octets ne change pas car le sens de la donnée n'a aucune emprise sur l'ordre des octets, c'est le système et la convention qui a une emprise.
+
+Exercice
+0xDEADBEEF
+Découpe-la en octets, puis donne-moi sa représentation en mémoire **(a)** en big-endian et **(b)** en little-endian. Et dis-moi laquelle ta **Debian** utilise.
+
+| 0xDEADBEEF | a   | [DE][AD][BE][EF] |
+| ---------- | --- | ---------------- |
+| 0xDEADBEEF | b   | [EF][BE][AD][DE] |
+Ma debian utilise du little-endian donc b.
+
+L'endianness réordonne les octets en entier mais pas les bits à l'intérieur de celui-ci.
+### Mémoire
+
+Endianness détermine dans quel ordre on classe les octets dans la mémoire.
+Comme dit précédemment dans la mémoire c'est stocker sous forme d'adresses.
+Exemple :
+Big-endian >> l'octet le plus fort est à l'adresse la plus basse :
+- adresse 1000 : 01
+- adresse 1001 : BB
+Little-endian >> l'octet le plus faible est à l'adresse la plus basse:
+- adresse 1000 : BB
+- adresse 1001 : 01
+
+En mémoire, l'unité la plus petite qui a une **adresse**, c'est l'**octet**. Le processeur distribue les adresses octet par octet — il n'existe pas d'adresse pour un bit isolé. Donc le plus petit truc que l'endianness _peut_ déplacer, c'est un octet entier. Les bits d'un octet partagent la même adresse → impossible de les réordonner individuellement.
+
+#### Représentation de la mémoire 
+
+représentation mémoire d'une structure simple : ordre des champs, alignement.
+playlist yt
+### Communication
+
+On a pu voir que ma debian ( architecture de  x86) utilise la convention little-endian tandis que le réseau utilise le big-endian. 
+Donc techniquement le pc et le réseau sont tout le temps en désaccord. La solution est qu'à chaque fois qu'un nombre de plus d'un octet part, il est converti automatiquement, maintenant qui est-ce qui fait la conversion, c'est tout simplement les programmes informatiques qui le font.
+La conversion a lieu juste avant l'envoi et après du message, ce n'est pas la carte réseau qui convertit mais le C, le Python où le service système de la debian qui prépare les données en question en utilisant des fonctions de conversion standardisées.
+Exemple :
+Dans le langage de programmation C, une bibilothèque système nommé "glibc" a certaines donctions qui le font
+
+| htons() | Host to Network Short | convertit un entier de 16 bits (2^16 == 2 octets) idéal pour l'envoi des numéros de ports |
+| ------- | --------------------- | ----------------------------------------------------------------------------------------- |
+| htonl() | Host to Network Long  | convertit un entier de 32 bits (2^32 == 4 octets) idéal  pour l'envoi des adresses IPv4   |
+| ntohs() | Network to Host Short | fait l'inverse pour la réception des ports                                                |
+| ntohl   | Network to Host Long  | fait l'inverse pour la reception des IPs                                                  |
+#### Exemple 
+
+![](Pasted%20image%2020260608112956.png)
+Imaginons qu'on veut envoyer un paquet à quelqu'un, imaginons que le paquet est une lettre à la poste 
+
+
+| L'enveloppe (En-tête) : | IP Source                                         | IP Destination | Port | -> Format réseau (Big-endian) obligatoire |
+| ----------------------- | ------------------------------------------------- | -------------- | ---- | ----------------------------------------- |
+| Le contenu (Payload)    | "Bonjour, voici le cours d'aujourd'hui" ou un pdf |                |      |                                           |
+
+Avant d'envoyer, ce qui est convertie est l'en-tête pour que le réseau comprenne où envoyer quand le switch et le routeur le réceptionne. Dans notre cas, la Debian utilise les fonctions htons() et htonl() pour écrire l'adresse IP et le port en Big-Endian.
+
+Mais le paylod lui, son contenu reste inchanger ? > le réseau ne lit pas le contenu de la lettre donc pas besoin d'éventuels convertions pour qu'il soit en Big-endian :
+- si le contenu c'est du texte , chaque lettre vaut 1 octet donc il n'y a pas de poids ni de poids faible donc pas besoin de l'endianess, donc pas de conversion
+- si le contenu est plus gros ( 4 octets ou + ) comme une adresse IP, la conversion se fait directement en Big-endian
+- si sa mélange les 2 , c'est que le contenu qui a besoin d'être convertit qui convertit et après le programme "colle" les morceaux poue que le tout fasse un bloc de 5 octets indépendamment de chaque.
+
+En conclusion, le processeur dicté par le programme (comme Gmail ou WhatsApp) ne convertit que l'en-tête en Big-endian et pour ce qui est du contenu, il ne cherche même pas à savoir, il découpe juste le tout en petit paquets et mettre les en-têtes en Big-endian autour et envoyer le tout depuis la carte réseau ( processeur envoit paquet dans la RAM > carte réseau qui prend les octets qui le concerne et qui constitue la requête dans la RAM > qui transforme le tout en signaux pour l'ejecter dans le cables )
+## Axes d'entraînements
+
+- Compte en hexadécimla à voix haute au-delà de F de 0 -> 0x1F -> 0x20 == faut que sa vienne fluidement comme respirer
+- Lire un dump mémoire brut complet == prendre une dizaine d'octets hexa d'affilée et les décoder
+
+## Exercice
+
+- Lire le dump 
+- voir les videos 
+- structure de la mémoire 
