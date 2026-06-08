@@ -177,11 +177,53 @@ Mais le paylod lui, son contenu reste inchanger ? > le réseau ne lit pas le con
 En conclusion, le processeur dicté par le programme (comme Gmail ou WhatsApp) ne convertit que l'en-tête en Big-endian et pour ce qui est du contenu, il ne cherche même pas à savoir, il découpe juste le tout en petit paquets et mettre les en-têtes en Big-endian autour et envoyer le tout depuis la carte réseau ( processeur envoit paquet dans la RAM > carte réseau qui prend les octets qui le concerne et qui constitue la requête dans la RAM > qui transforme le tout en signaux pour l'ejecter dans le cables )
 ## Axes d'entraînements
 
-- Compte en hexadécimla à voix haute au-delà de F de 0 -> 0x1F -> 0x20 == faut que sa vienne fluidement comme respirer
-- Lire un dump mémoire brut complet == prendre une dizaine d'octets hexa d'affilée et les décoder
+### DUMP À ANALYSER
 
+Offset 0000 : 01 BB 00 50 48 54 54 50 EF BE AD DE 00 00 01 F4 
+
+a) octets 0-1 (01 BB), 16 bits big-endian → valeur décimale ? 
+-> on peut voir qu'il y a 2 octets dont on va découper par poids de position
+![](Pasted%20image%2020260608161336.png)
+On sait que B = 11 en décimale
+
+| 0               | 1              | B              | B             | base 16    |
+| --------------- | -------------- | -------------- | ------------- | ---------- |
+| 0 * 16^3(=4096) | 1 * 16^2(=256) | 11 * 16^1(=16) | 11 * 16^0(=1) | conversion |
+| 0               | 256            | 176            | 11            | conversion |
+|                 |                |                | 443           | base 10    |
+
+b) octets 2-3 (00 50), 16 bits big-endian → valeur décimale ? 
+-> on peut voir qu'il y a 2 octets qu'on va découper poids de position
+
+| 0        | 0        | 5        | 0        | base 16    |
+| -------- | -------- | -------- | -------- | ---------- |
+| 0 * 16^3 | 0 * 16^2 | 5 * 16^1 | 0 * 16^0 | conversion |
+| 0        | 0        | 80       | 0        | conversion |
+|          |          |          | 80       | base 10    |
+
+
+c) octets 4-7 (48 54 54 50) en ASCII → quel mot ? (indice : 0x48 = 'H', lettres consécutives) 
+->  On a de l'hex qu'on veut convertir en ASCII, il faut savoir qu'il existe des repères 
+https://www.ascii-code.com/fr
+
+| Catégorie       | Plage en hexadécimal | Point de repère ASCII |
+| --------------- | -------------------- | --------------------- |
+| Chiffres        | 30 à 39              | 30 = 0                |
+| Alphabets(Maj)  | 41 à 5A              | 41 = A                |
+| Alpahabets(Min) | 61 à 7A              | 61 = a                |
+Donc nous notre suite d'héxadécimal commence par 4 ou 5 donc c'est forcement une majuscule .
+Pour 48, on commence à compter à part de 41= A , sa donne nous H.
+Pour 54, on repart aussi de 41 mais faut comprendre qu'après 49 sa fait (4A à 4F == J à O) pour reprendre à 50 qui sera P faut juste faire +4 pour tomber sur notre lettre qui est T.
+2 * 54 donc 2 * P
+Et donc 50 pour en revenir c'est P 
+Résulat : HTTP
+
+d) octets 8-11 (EF BE AD DE) lus en LITTLE-endian, 32 bits → valeur hexa ? 
+
+e) octets 12-15 (00 00 01 F4), 32 bits big-endian → valeur décimale ?
 ## Exercice
 
 - Lire le dump 
 - voir les videos 
-- structure de la mémoire 
+- structure de la mémoire > yt + claude 
+- exercices automatismes
