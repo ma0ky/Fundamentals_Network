@@ -22,7 +22,7 @@ Le décimal contient 10 caractères (0,1,2,3,4,5,6,7,8,9)
 Questions : 
 - Pourquoi c'est des 2exposants ? >> c'est en base 2 comme le décimal qui est lui en base 10 et l'héxadécimal en base 16
 - Comment est-ce que sa communique avec l'ordinateur et à quelle échelle ? C'est surtout l'héxadécimal qui communique (héxadécimal est juste du binaire écrit différament et compacter sans perte) c'est pour ça que tout les outils  comme Wirehsark parlent héxadécimal. >>"un dump hexa, c'est du binaire déguisé." Pour le décimal, ce n'est pas une puissance de 2 aucun découpage peut-être propre donc ce n'est pas du binaire compacté sans perte.
-- A quoi sa sert concrêtement ? >> à communiquer dans le langage de la machine
+- A quoi sa sert concrêtement ? >> à communiquer dans le langage de la machine qui lui comprend que le binaire, l'hexa sert aux humains à le lire.
 - Pourquoi un octet c'est seulement 8bits et pas 7 ou 9 ? >> On prend 8 car c'est divisable parfaitement par 2 donc binaire 8=2^3 , l'ascii original tenait sur 7bits(128 = 128 caractères) donc on est passer à 8bits(256) pour laisser place aux symboles et accents, IBM (entreprise multinationale américaine présente dans les domaines du matériel informatique, du logiciel et des services informatiques) a standardisé avec son System/360 (1964) toute l'industrie a suivi.
 - Soyons honnête est-ce que c'est important et utile de connaître 2^7 = 128 sinon à chaque fois que sa convertit du binaire en décimale je pense direct à 128 que 2^7 ? >> connaître ses puissances
 - Comment devrais-je mieux faire la convertion ? >> oui 
@@ -124,13 +124,14 @@ Découpe-la en octets, puis donne-moi sa représentation en mémoire **(a)** en 
 | ---------- | --- | ---------------- |
 | 0xDEADBEEF | b   | [EF][BE][AD][DE] |
 Ma debian utilise du little-endian donc b.
+Tout les architectures intel x86 et amd64/x86-64 utilise littme-endian.
 
 L'endianness réordonne les octets en entier mais pas les bits à l'intérieur de celui-ci.
 ### Mémoire
 
 Endianness détermine dans quel ordre on classe les octets dans la mémoire.
 Comme dit précédemment dans la mémoire c'est stocker sous forme d'adresses.
-Exemple :
+Exemple : 0x01BB
 Big-endian >> l'octet le plus fort est à l'adresse la plus basse :
 - adresse 1000 : 01
 - adresse 1001 : BB
@@ -142,26 +143,73 @@ En mémoire, l'unité la plus petite qui a une **adresse**, c'est l'**octet**. L
 
 #### Représentation de la mémoire 
 
-représentation mémoire d'une structure simple : ordre des champs, alignement.
-playlist yt
+représentation mémoire d'une structure simple : ordre des champs, alignement
+
+Chaque octet à une adresse , certaines données qui font plusieurs octets peuvent prendre plusieurs adresses.
+Par exemple: un entier 1000 et il commence à l'adresse 1010 et finit 1013 comme il prend 4 octets donc 4 adresses 
+
+La structure de la mémoire est un ensemble d'informations différentes(champs) qui concerne la même chose. 
+
+| Spider-man |              |           |
+| ---------- | ------------ | --------- |
+| Nom        | Peter Parker | 11 octets |
+| Pouvoirs   | Toile        | 5 octets  |
+| Sexe       | M            | 1 octet   |
+| Age        | 22           | 2 octets  |
+L'ordre des champs dans une mémoire pour une même information(dossier) dépend de l'ordre que dans lequel tu le ranges dans le dossier de base.
+Exemple A :
+
+| Spider-man         |                  |          |          |
+| ------------------ | ---------------- | -------- | -------- |
+| Nom : Peter Parker | Pouvoirs : Toile | Sexe : M | Age : 22 |
+| 11 octets          | 5 octets         | 1 octet  | 2 octets |
+Exemple B :
+
+| Spider-man |          |                    |                  |
+| ---------- | -------- | ------------------ | ---------------- |
+| Sexe : M   | Age : 22 | Nom : Peter Parker | Pouvoirs : Toile |
+| 1 octet    | 2 octets | 11 octets          | 5 octets         |
+Même données mais dans un ordre différents, on pourrait penser que c'est la même chose mais loin de là, c'est là qu'intervient l'alignement.
+
+Il existe une règle de l'alignement : Un champ doit commencer à une adresse qui est un multiple de sa taille. Contrainte que le processeur a c'est qu'il lit par blocs réguliers.
+Voici les règles d'alignements :
+
+| Types de données     | Exemple                            | Taille   | adresses              |
+| -------------------- | ---------------------------------- | -------- | --------------------- |
+| Caractères (char)    | [a][B][5][@]                       | 1 octet  | nimporte où           |
+| Entier court (short) | entre -32 768 et 32 768            | 2 octets | 0, 2, 4, 6, 8, ...    |
+| Entier (int)         | entre -2 milliards et +2 milliards | 4 octets | 0, 2, 4, 8, 12,...    |
+| Double (double)      | nombre à virgules : [3,14] [0,001] | 8 octets | 0, 8, 16, 24, 32, ... |
+
+| Spider-man       |          |          |                    |                |                 |
+| ---------------- | -------- | -------- | ------------------ | -------------- | --------------- |
+| Pouvoirs : Toile | Sexe : M | Age : 22 | Nom : Peter Parker | Padding de fin |                 |
+| 5 octets         | 1 octets | 2 octets | 11 octets          | 1 octet        |                 |
+| 0 à 4            | 5        | 6 à 7    | 8 à 19             | 20             | Adresse mémoire |
+
+Le padding est du remplissage d'octets vides insérer automatiquement entre les champs pour respecter les règles d'alignements .
+Dans notre cas, on en a pas eu besoin mais avec padding on aurait pu faire :
+On a rajouter un padding de fin avec la règle "la taille totale d'une structure doit toujours être un multiple de son alignement le plus grand." toute les autres valueurs sont du chart donc 1 octet tandis que Age est de 2 octets, c'est le plus grand donc v=on va chercher un total qui est le multiple de celui-ci, ce qui donne à rajouter un padding de 1 pour donner 20
+
 ### Communication
 
 On a pu voir que ma debian ( architecture de  x86) utilise la convention little-endian tandis que le réseau utilise le big-endian. 
 Donc techniquement le pc et le réseau sont tout le temps en désaccord. La solution est qu'à chaque fois qu'un nombre de plus d'un octet part, il est converti automatiquement, maintenant qui est-ce qui fait la conversion, c'est tout simplement les programmes informatiques qui le font.
 La conversion a lieu juste avant l'envoi et après du message, ce n'est pas la carte réseau qui convertit mais le C, le Python où le service système de la debian qui prépare les données en question en utilisant des fonctions de conversion standardisées.
 Exemple :
-Dans le langage de programmation C, une bibilothèque système nommé "glibc" a certaines donctions qui le font
+Dans le langage de programmation C, une bibilothèque système nommé "glibc" a certaines fonctions qui le font
 
-| htons() | Host to Network Short | convertit un entier de 16 bits (2^16 == 2 octets) idéal pour l'envoi des numéros de ports |
-| ------- | --------------------- | ----------------------------------------------------------------------------------------- |
-| htonl() | Host to Network Long  | convertit un entier de 32 bits (2^32 == 4 octets) idéal  pour l'envoi des adresses IPv4   |
-| ntohs() | Network to Host Short | fait l'inverse pour la réception des ports                                                |
-| ntohl   | Network to Host Long  | fait l'inverse pour la reception des IPs                                                  |
+| htons()   | Host to Network Short | convertit un entier de 16 bits (2^16 == 2 octets) en Big-Endian idéal pour l'envoi des numéros de ports |
+| --------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| htonl()   | Host to Network Long  | convertit un entier de 32 bits (2^32 == 4 octets) en Big-Endian idéal pour l'envoi des adresses IPv4    |
+| ntohs()   | Network to Host Short | fait l'inverse                                                                                          |
+| ntohl()   | Network to Host Long  | fait l'inverse                                                                                          |
+| htobe64() | Host to Big-Endian    | convertit un entier de 64bits (=8 octets ) en big_endian                                                |
+| be64toh() | Big-Endian to Host    | convertit le big-endian à l'architecture host                                                           |
 #### Exemple 
 
 ![](Pasted%20image%2020260608112956.png)
 Imaginons qu'on veut envoyer un paquet à quelqu'un, imaginons que le paquet est une lettre à la poste 
-
 
 | L'enveloppe (En-tête) : | IP Source                                         | IP Destination | Port | -> Format réseau (Big-endian) obligatoire |
 | ----------------------- | ------------------------------------------------- | -------------- | ---- | ----------------------------------------- |
@@ -172,9 +220,9 @@ Avant d'envoyer, ce qui est convertie est l'en-tête pour que le réseau compren
 Mais le paylod lui, son contenu reste inchanger ? > le réseau ne lit pas le contenu de la lettre donc pas besoin d'éventuels convertions pour qu'il soit en Big-endian :
 - si le contenu c'est du texte , chaque lettre vaut 1 octet donc il n'y a pas de poids ni de poids faible donc pas besoin de l'endianess, donc pas de conversion
 - si le contenu est plus gros ( 4 octets ou + ) comme une adresse IP, la conversion se fait directement en Big-endian
-- si sa mélange les 2 , c'est que le contenu qui a besoin d'être convertit qui convertit et après le programme "colle" les morceaux poue que le tout fasse un bloc de 5 octets indépendamment de chaque.
+- si sa mélange les 2 , c'est que le contenu qui a besoin d'être convertit qui convertit et après le programme "colle" les morceaux pour que le tout fasse un bloc de 5 octets indépendamment de chaque.
 
-En conclusion, le processeur dicté par le programme (comme Gmail ou WhatsApp) ne convertit que l'en-tête en Big-endian et pour ce qui est du contenu, il ne cherche même pas à savoir, il découpe juste le tout en petit paquets et mettre les en-têtes en Big-endian autour et envoyer le tout depuis la carte réseau ( processeur envoit paquet dans la RAM > carte réseau qui prend les octets qui le concerne et qui constitue la requête dans la RAM > qui transforme le tout en signaux pour l'ejecter dans le cables )
+En conclusion, le processeur dicté par le programme (comme Gmail ou WhatsApp) ne convertit que l'en-tête en Big-endian et pour ce qui est du contenu, il ne cherche même pas à savoir, il découpe juste le tout en petit paquets et met des en-têtes en Big-endian autour et envoit le tout depuis la carte réseau ( processeur envoit paquet dans la RAM > carte réseau qui prend les octets qui le concerne et qui constitue la requête dans la RAM > qui transforme le tout en signaux pour l'ejecter dans le cables )
 ## Axes d'entraînements
 
 ### DUMP À ANALYSER
@@ -193,7 +241,7 @@ On sait que B = 11 en décimale
 |                 |                |                | 443           | base 10    |
 
 b) octets 2-3 (00 50), 16 bits big-endian → valeur décimale ? 
--> on peut voir qu'il y a 2 octets qu'on va découper poids de position
+-> on peut voir qu'il y a 2 octets qu'on va découper en poids de position
 
 | 0        | 0        | 5        | 0        | base 16    |
 | -------- | -------- | -------- | -------- | ---------- |
@@ -218,12 +266,48 @@ Pour 54, on repart aussi de 41 mais faut comprendre qu'après 49 sa fait (4A à 
 Et donc 50 pour en revenir c'est P 
 Résulat : HTTP
 
-d) octets 8-11 (EF BE AD DE) lus en LITTLE-endian, 32 bits → valeur hexa ? 
+d) octets 8-11 (EF BE AD DE) lus en LITTLE-endian, 32 bits → valeur hexa ?
+-> comme on a une suite d'octets et qu'on veut en little-endian, on inverse ce qui donne DE AD BE EF
+-> 
 
 e) octets 12-15 (00 00 01 F4), 32 bits big-endian → valeur décimale ?
+-> on va chercher la valeur décimale donc on va les découper par poids de position
+
+| 0        | 0        | 0        | 0        | 0        | 1        | F         | 4        | base de 16 |
+| -------- | -------- | -------- | -------- | -------- | -------- | --------- | -------- | ---------- |
+| 0 * 16^7 | 0 * 16^6 | 0 * 16^5 | 0 * 16^4 | 0 * 16^3 | 1 * 16^2 | 15 * 16^1 | 4 * 16^0 | conversion |
+| 0        | 0        | 0        | 0        | 0        | 256      | 240       | 4        | conversion |
+|          |          |          |          |          |          |           | 500      | base de 10 |
+
 ## Exercice
 
-- Lire le dump 
-- voir les videos 
-- structure de la mémoire > yt + claude 
 - exercices automatismes
+#### EX.1 — Compter en hexa (combler le trou post-F)
+
+Consigne : pars d'un nombre hexa donné, écris les valeurs suivantes en ajoutant 1 à chaque pas. But : que « ...F, 10, 11 » devienne réflexe. Règle : comme en décimal, dès qu'un chiffre dépasse F (=15) il repasse à 0 et on ajoute 1 à gauche. 
+Exemples (réponses incluses) : 
+- Depuis 0E, +1 six fois → 0E, 0F, 10, 11, 12, 13, 14 
+- Depuis 1D, +1 cinq fois → 1D, 1E, 1F, 20, 21, 22 
+- Depuis F8, +1 six fois → F8, F9, FA, FB, FC, FD, FE (puis FF, 100...)
+- Progression : +1 → +2 → compter à rebours (−1) depuis 0x21.
+
+#### EX.2 — Conversions éclair (octet)
+
+Consigne : pour chaque octet, donne décimal ET hexa par calcul des nibbles (8-4-2-1), en moins de 30 s. Pas de tableau. 
+Méthode : couper en 2 nibbles, calculer chacun, mapper 10-15 → A-F.
+Exemples (réponses incluses) : 
+- 1011 0100 → déc 180, hexa B4
+- 1111 1111 → déc 255, hexa FF
+- 0x6C → bin 0110 1100, déc 108 
+- 0xA0 → bin 1010 0000, déc 160 
+- Progression : binaire→(déc,hex) → hexa→(bin,déc) → décimal→(bin,hex) (le plus dur : diviser par 16).
+
+#### EX.3 — Endianness (ranger / lire)
+
+Consigne : pour un nombre multi-octets, écris-le en big-endian ET little-endian, puis dis ce qu'une machine little-endian lirait si les octets venaient du réseau (big-endian). 
+Rappel : l'endianness réordonne les OCTETS, jamais les bits internes. 
+Exemples (réponses incluses) : 
+- 0xCAFE → BE [CA] [FE] · LE [FE] [CA] 
+- 0x12345678 → BE [12] [34] [56] [78] · LE [78] [56] [34] [12] 
+- Port 0x1F90 (8080) reçu [1F] [90] : lu BE = 0x1F90 = 8080 (correct) · lu LE = 0x901F = 36895 (faux) 
+- Progression : 2 octets → 4 octets → scénario « mauvaise lecture réseau ».
